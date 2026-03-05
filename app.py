@@ -9,12 +9,12 @@ st.write("Enter patient details to predict possible disease risks.")
 # ---------------- LOAD MODELS ---------------- #
 
 # Load models
-diabetes_model = joblib.load("models/diabetes_model.pkl")
-lung_model = joblib.load("models/survey lung cancer.pkl")
-thyroid_model = joblib.load("models/Thyroid_Diff_model.pkl")
-alz_model = joblib.load("models/alzheimers_disease_data_model.pkl")
-parkinson_model = joblib.load("models/parkinson.pkl")
-stroke_model = joblib.load("models/stroke_model_xgb (2).pkl")
+diabetes_model = joblib.load("diabetes_model.pkl")
+lung_model = joblib.load("survey lung cancer.pkl")
+thyroid_model = joblib.load("Thyroid_Diff_model.pkl")
+alz_model = joblib.load("alzheimers_disease_data_model.pkl")
+parkinson_model = joblib.load("parkinson.pkl")
+stroke_model = joblib.load("stroke_model_xgb (2).pkl")
 
 # ---------------- SELECT DISEASE ---------------- #
 
@@ -170,4 +170,5 @@ elif disease == "Alzheimer":
         elif prob < 0.7:
             st.warning(f"🟡 Medium Risk ({prob*100:.1f}%)")
         else:
+
             st.error(f"🔴 High Risk ({prob*100:.1f}%)")
