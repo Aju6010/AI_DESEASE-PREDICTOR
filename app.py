@@ -15,6 +15,14 @@ def prepare_input(input_list, model):
         input_list.append(0)
     return np.array([input_list])
 
+def show_result(prob):
+    if prob < 0.3:
+        st.success(f"🟢 Low Risk ({prob*100:.1f}%)")
+    elif prob < 0.6:
+        st.warning(f"🟡 Medium Risk ({prob*100:.1f}%)")
+    else:
+        st.error(f"🔴 High Risk ({prob*100:.1f}%)")
+
 # ---------------- LOAD MODELS ---------------- #
 
 diabetes_model = joblib.load("diabetes_model.pkl")
@@ -49,15 +57,8 @@ if disease == "Diabetes":
     if st.button("Predict Diabetes Risk"):
 
         input_data = np.array([[pregnancies, glucose, bp, skin, insulin, bmi, pedigree, age]])
-
         prob = diabetes_model.predict_proba(input_data)[0][1]
-
-        if prob < 0.3:
-            st.success(f"🟢 Low Risk ({prob*100:.1f}%)")
-        elif prob < 0.7:
-            st.warning(f"🟡 Medium Risk ({prob*100:.1f}%)")
-        else:
-            st.error(f"🔴 High Risk ({prob*100:.1f}%)")
+        show_result(prob)
 
 # ---------------- STROKE ---------------- #
 
@@ -71,19 +72,17 @@ elif disease == "Stroke":
     bmi = st.number_input("BMI")
     glucose = st.number_input("Average Glucose Level")
 
+    # Extra inputs (improves prediction 🔥)
+    gender = st.selectbox("Gender (0=Female,1=Male)", [0,1])
+    smoking = st.selectbox("Smoking (0=No,1=Yes)", [0,1])
+
     if st.button("Predict Stroke Risk"):
 
-        input_list = [age, hypertension, heart, glucose, bmi]
+        input_list = [age, hypertension, heart, glucose, bmi, gender, smoking]
         input_data = prepare_input(input_list, stroke_model)
 
         prob = stroke_model.predict_proba(input_data)[0][1]
-
-        if prob < 0.3:
-            st.success(f"🟢 Low Risk ({prob*100:.1f}%)")
-        elif prob < 0.7:
-            st.warning(f"🟡 Medium Risk ({prob*100:.1f}%)")
-        else:
-            st.error(f"🔴 High Risk ({prob*100:.1f}%)")
+        show_result(prob)
 
 # ---------------- LUNG CANCER ---------------- #
 
@@ -97,19 +96,17 @@ elif disease == "Lung Cancer":
     anxiety = st.selectbox("Anxiety", [0,1])
     peer_pressure = st.selectbox("Peer Pressure", [0,1])
 
+    # Extra features
+    alcohol = st.selectbox("Alcohol Consumption", [0,1])
+    coughing = st.selectbox("Chronic Cough", [0,1])
+
     if st.button("Predict Lung Cancer Risk"):
 
-        input_list = [age, smoking, yellow_fingers, anxiety, peer_pressure]
+        input_list = [age, smoking, yellow_fingers, anxiety, peer_pressure, alcohol, coughing]
         input_data = prepare_input(input_list, lung_model)
 
         prob = lung_model.predict_proba(input_data)[0][1]
-
-        if prob < 0.3:
-            st.success(f"🟢 Low Risk ({prob*100:.1f}%)")
-        elif prob < 0.7:
-            st.warning(f"🟡 Medium Risk ({prob*100:.1f}%)")
-        else:
-            st.error(f"🔴 High Risk ({prob*100:.1f}%)")
+        show_result(prob)
 
 # ---------------- PARKINSON ---------------- #
 
@@ -122,19 +119,17 @@ elif disease == "Parkinson":
     flo = st.number_input("MDVP:Flo(Hz)")
     jitter = st.number_input("Jitter")
 
+    # Extra features
+    shimmer = st.number_input("Shimmer", 0.0)
+    hnr = st.number_input("HNR", 0.0)
+
     if st.button("Predict Parkinson Risk"):
 
-        input_list = [fo, fhi, flo, jitter]
+        input_list = [fo, fhi, flo, jitter, shimmer, hnr]
         input_data = prepare_input(input_list, parkinson_model)
 
         prob = parkinson_model.predict_proba(input_data)[0][1]
-
-        if prob < 0.3:
-            st.success(f"🟢 Low Risk ({prob*100:.1f}%)")
-        elif prob < 0.7:
-            st.warning(f"🟡 Medium Risk ({prob*100:.1f}%)")
-        else:
-            st.error(f"🔴 High Risk ({prob*100:.1f}%)")
+        show_result(prob)
 
 # ---------------- THYROID ---------------- #
 
@@ -147,19 +142,16 @@ elif disease == "Thyroid":
     t3 = st.number_input("T3")
     t4 = st.number_input("T4")
 
+    # Extra feature
+    fatigue = st.selectbox("Fatigue (0=No,1=Yes)", [0,1])
+
     if st.button("Predict Thyroid Risk"):
 
-        input_list = [age, tsh, t3, t4]
+        input_list = [age, tsh, t3, t4, fatigue]
         input_data = prepare_input(input_list, thyroid_model)
 
         prob = thyroid_model.predict_proba(input_data)[0][1]
-
-        if prob < 0.3:
-            st.success(f"🟢 Low Risk ({prob*100:.1f}%)")
-        elif prob < 0.7:
-            st.warning(f"🟡 Medium Risk ({prob*100:.1f}%)")
-        else:
-            st.error(f"🔴 High Risk ({prob*100:.1f}%)")
+        show_result(prob)
 
 # ---------------- ALZHEIMER ---------------- #
 
@@ -171,16 +163,14 @@ elif disease == "Alzheimer":
     mmse = st.number_input("MMSE Score")
     cdr = st.number_input("CDR Score")
 
+    # Extra features
+    memory_loss = st.selectbox("Memory Loss (0=No,1=Yes)", [0,1])
+    confusion = st.selectbox("Confusion (0=No,1=Yes)", [0,1])
+
     if st.button("Predict Alzheimer Risk"):
 
-        input_list = [age, mmse, cdr]
+        input_list = [age, mmse, cdr, memory_loss, confusion]
         input_data = prepare_input(input_list, alz_model)
 
         prob = alz_model.predict_proba(input_data)[0][1]
-
-        if prob < 0.3:
-            st.success(f"🟢 Low Risk ({prob*100:.1f}%)")
-        elif prob < 0.7:
-            st.warning(f"🟡 Medium Risk ({prob*100:.1f}%)")
-        else:
-            st.error(f"🔴 High Risk ({prob*100:.1f}%)")
+        show_result(prob)
