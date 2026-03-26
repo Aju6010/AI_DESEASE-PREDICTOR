@@ -7,7 +7,7 @@ st.set_page_config(page_title="AI Doctor", page_icon="🩺")
 st.title("🩺 AI Doctor - Disease Risk Prediction System")
 st.write("Enter patient details to predict possible disease risks.")
 
-# ---------------- HELPER FUNCTION ---------------- #
+# ---------------- HELPER FUNCTIONS ---------------- #
 
 def prepare_input(input_list, model):
     required = model.n_features_in_
@@ -15,10 +15,15 @@ def prepare_input(input_list, model):
         input_list.append(0)
     return np.array([input_list])
 
+def adjust_probability(prob, inputs):
+    score = sum(inputs) / (len(inputs) + 1)
+    adjusted = prob + (score * 0.2)
+    return max(0, min(1, adjusted))
+
 def show_result(prob):
-    if prob < 0.3:
+    if prob < 0.4:
         st.success(f"🟢 Low Risk ({prob*100:.1f}%)")
-    elif prob < 0.6:
+    elif prob < 0.7:
         st.warning(f"🟡 Medium Risk ({prob*100:.1f}%)")
     else:
         st.error(f"🔴 High Risk ({prob*100:.1f}%)")
@@ -71,8 +76,6 @@ elif disease == "Stroke":
     heart = st.selectbox("Heart Disease", [0,1])
     bmi = st.number_input("BMI")
     glucose = st.number_input("Average Glucose Level")
-
-    # Extra inputs (improves prediction 🔥)
     gender = st.selectbox("Gender (0=Female,1=Male)", [0,1])
     smoking = st.selectbox("Smoking (0=No,1=Yes)", [0,1])
 
@@ -82,6 +85,8 @@ elif disease == "Stroke":
         input_data = prepare_input(input_list, stroke_model)
 
         prob = stroke_model.predict_proba(input_data)[0][1]
+        prob = adjust_probability(prob, input_list)
+
         show_result(prob)
 
 # ---------------- LUNG CANCER ---------------- #
@@ -95,17 +100,17 @@ elif disease == "Lung Cancer":
     yellow_fingers = st.selectbox("Yellow Fingers", [0,1])
     anxiety = st.selectbox("Anxiety", [0,1])
     peer_pressure = st.selectbox("Peer Pressure", [0,1])
-
-    # Extra features
     alcohol = st.selectbox("Alcohol Consumption", [0,1])
-    coughing = st.selectbox("Chronic Cough", [0,1])
+    cough = st.selectbox("Chronic Cough", [0,1])
 
     if st.button("Predict Lung Cancer Risk"):
 
-        input_list = [age, smoking, yellow_fingers, anxiety, peer_pressure, alcohol, coughing]
+        input_list = [age, smoking, yellow_fingers, anxiety, peer_pressure, alcohol, cough]
         input_data = prepare_input(input_list, lung_model)
 
         prob = lung_model.predict_proba(input_data)[0][1]
+        prob = adjust_probability(prob, input_list)
+
         show_result(prob)
 
 # ---------------- PARKINSON ---------------- #
@@ -118,10 +123,8 @@ elif disease == "Parkinson":
     fhi = st.number_input("MDVP:Fhi(Hz)")
     flo = st.number_input("MDVP:Flo(Hz)")
     jitter = st.number_input("Jitter")
-
-    # Extra features
-    shimmer = st.number_input("Shimmer", 0.0)
-    hnr = st.number_input("HNR", 0.0)
+    shimmer = st.number_input("Shimmer")
+    hnr = st.number_input("HNR")
 
     if st.button("Predict Parkinson Risk"):
 
@@ -129,6 +132,8 @@ elif disease == "Parkinson":
         input_data = prepare_input(input_list, parkinson_model)
 
         prob = parkinson_model.predict_proba(input_data)[0][1]
+        prob = adjust_probability(prob, input_list)
+
         show_result(prob)
 
 # ---------------- THYROID ---------------- #
@@ -141,8 +146,6 @@ elif disease == "Thyroid":
     tsh = st.number_input("TSH")
     t3 = st.number_input("T3")
     t4 = st.number_input("T4")
-
-    # Extra feature
     fatigue = st.selectbox("Fatigue (0=No,1=Yes)", [0,1])
 
     if st.button("Predict Thyroid Risk"):
@@ -151,6 +154,8 @@ elif disease == "Thyroid":
         input_data = prepare_input(input_list, thyroid_model)
 
         prob = thyroid_model.predict_proba(input_data)[0][1]
+        prob = adjust_probability(prob, input_list)
+
         show_result(prob)
 
 # ---------------- ALZHEIMER ---------------- #
@@ -162,8 +167,6 @@ elif disease == "Alzheimer":
     age = st.number_input("Age")
     mmse = st.number_input("MMSE Score")
     cdr = st.number_input("CDR Score")
-
-    # Extra features
     memory_loss = st.selectbox("Memory Loss (0=No,1=Yes)", [0,1])
     confusion = st.selectbox("Confusion (0=No,1=Yes)", [0,1])
 
@@ -173,4 +176,6 @@ elif disease == "Alzheimer":
         input_data = prepare_input(input_list, alz_model)
 
         prob = alz_model.predict_proba(input_data)[0][1]
+        prob = adjust_probability(prob, input_list)
+
         show_result(prob)
