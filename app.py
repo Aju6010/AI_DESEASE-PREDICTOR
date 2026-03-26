@@ -2,13 +2,21 @@ import streamlit as st
 import joblib
 import numpy as np
 
-st.title("🩺 AI Doctor - Disease Risk Prediction System")
+st.set_page_config(page_title="AI Doctor", page_icon="🩺")
 
+st.title("🩺 AI Doctor - Disease Risk Prediction System")
 st.write("Enter patient details to predict possible disease risks.")
+
+# ---------------- HELPER FUNCTION ---------------- #
+
+def prepare_input(input_list, model):
+    required = model.n_features_in_
+    while len(input_list) < required:
+        input_list.append(0)
+    return np.array([input_list])
 
 # ---------------- LOAD MODELS ---------------- #
 
-# Load models
 diabetes_model = joblib.load("diabetes_model.pkl")
 lung_model = joblib.load("survey lung cancer.pkl")
 thyroid_model = joblib.load("Thyroid_Diff_model.pkl")
@@ -65,7 +73,8 @@ elif disease == "Stroke":
 
     if st.button("Predict Stroke Risk"):
 
-        input_data = np.array([[age, hypertension, heart, glucose, bmi]])
+        input_list = [age, hypertension, heart, glucose, bmi]
+        input_data = prepare_input(input_list, stroke_model)
 
         prob = stroke_model.predict_proba(input_data)[0][1]
 
@@ -90,7 +99,8 @@ elif disease == "Lung Cancer":
 
     if st.button("Predict Lung Cancer Risk"):
 
-        input_data = np.array([[age, smoking, yellow_fingers, anxiety, peer_pressure]])
+        input_list = [age, smoking, yellow_fingers, anxiety, peer_pressure]
+        input_data = prepare_input(input_list, lung_model)
 
         prob = lung_model.predict_proba(input_data)[0][1]
 
@@ -114,7 +124,8 @@ elif disease == "Parkinson":
 
     if st.button("Predict Parkinson Risk"):
 
-        input_data = np.array([[fo, fhi, flo, jitter]])
+        input_list = [fo, fhi, flo, jitter]
+        input_data = prepare_input(input_list, parkinson_model)
 
         prob = parkinson_model.predict_proba(input_data)[0][1]
 
@@ -138,7 +149,8 @@ elif disease == "Thyroid":
 
     if st.button("Predict Thyroid Risk"):
 
-        input_data = np.array([[age, tsh, t3, t4]])
+        input_list = [age, tsh, t3, t4]
+        input_data = prepare_input(input_list, thyroid_model)
 
         prob = thyroid_model.predict_proba(input_data)[0][1]
 
@@ -161,7 +173,8 @@ elif disease == "Alzheimer":
 
     if st.button("Predict Alzheimer Risk"):
 
-        input_data = np.array([[age, mmse, cdr]])
+        input_list = [age, mmse, cdr]
+        input_data = prepare_input(input_list, alz_model)
 
         prob = alz_model.predict_proba(input_data)[0][1]
 
@@ -170,5 +183,4 @@ elif disease == "Alzheimer":
         elif prob < 0.7:
             st.warning(f"🟡 Medium Risk ({prob*100:.1f}%)")
         else:
-
             st.error(f"🔴 High Risk ({prob*100:.1f}%)")
