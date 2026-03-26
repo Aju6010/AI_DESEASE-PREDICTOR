@@ -16,14 +16,25 @@ def prepare_input(input_list, model):
     return np.array([input_list])
 
 def adjust_probability(prob, inputs):
-    score = sum(inputs) / (len(inputs) + 1)
-    adjusted = prob + (score * 0.2)
+    inputs = np.array(inputs, dtype=float)
+
+    # Normalize inputs safely
+    if np.max(inputs) != 0:
+        norm_inputs = inputs / np.max(inputs)
+    else:
+        norm_inputs = inputs
+
+    score = np.mean(norm_inputs)
+
+    # Balanced adjustment
+    adjusted = prob * 0.6 + score * 0.4
+
     return max(0, min(1, adjusted))
 
 def show_result(prob):
-    if prob < 0.4:
+    if prob < 0.35:
         st.success(f"🟢 Low Risk ({prob*100:.1f}%)")
-    elif prob < 0.7:
+    elif prob < 0.65:
         st.warning(f"🟡 Medium Risk ({prob*100:.1f}%)")
     else:
         st.error(f"🔴 High Risk ({prob*100:.1f}%)")
@@ -63,6 +74,7 @@ if disease == "Diabetes":
 
         input_data = np.array([[pregnancies, glucose, bp, skin, insulin, bmi, pedigree, age]])
         prob = diabetes_model.predict_proba(input_data)[0][1]
+
         show_result(prob)
 
 # ---------------- STROKE ---------------- #
