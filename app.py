@@ -15,13 +15,13 @@ def prepare_input(input_list, model):
     return np.array([input_list])
 
 def show_result(prob):
-    """Display risk based on probability."""
+    """Display risk in human-friendly wording."""
     if prob < 0.35:
-        st.success(f"🟢 Low Risk ({prob*100:.1f}%)")
+        st.success(f"🟢 You are well ({prob*100:.1f}% risk)")
     elif prob < 0.65:
-        st.warning(f"🟡 Medium Risk ({prob*100:.1f}%)")
+        st.warning(f"🟡 Monitor / Take precaution ({prob*100:.1f}% risk)")
     else:
-        st.error(f"🔴 High Risk ({prob*100:.1f}%)")
+        st.error(f"🔴 Immediate doctor check needed ({prob*100:.1f}% risk)")
 
 # ---------------- LOAD MODELS ---------------- #
 diabetes_model = joblib.load("diabetes_model.pkl")
@@ -66,13 +66,7 @@ elif disease == "Stroke":
     smoking = st.selectbox("Smoking (0=No,1=Yes)", [0,1])
 
     if st.button("Predict Stroke Risk"):
-        # Simple manual scaling to match model training ranges
-        age_scaled = age / 80
-        bmi_scaled = bmi / 50
-        glucose_scaled = glucose / 300
-        input_list = [
-            age_scaled, hypertension, heart, glucose_scaled, bmi_scaled, gender, smoking
-        ]
+        input_list = [age, hypertension, heart, glucose, bmi, gender, smoking]
         input_data = prepare_input(input_list, stroke_model)
         prob = stroke_model.predict_proba(input_data)[0][1]
         show_result(prob)
@@ -89,8 +83,7 @@ elif disease == "Lung Cancer":
     cough = st.selectbox("Chronic Cough", [0,1])
 
     if st.button("Predict Lung Cancer Risk"):
-        age_scaled = age / 80
-        input_list = [age_scaled, smoking, yellow_fingers, anxiety, peer_pressure, alcohol, cough]
+        input_list = [age, smoking, yellow_fingers, anxiety, peer_pressure, alcohol, cough]
         input_data = prepare_input(input_list, lung_model)
         prob = lung_model.predict_proba(input_data)[0][1]
         show_result(prob)
@@ -106,14 +99,7 @@ elif disease == "Parkinson":
     hnr = st.number_input("HNR")
 
     if st.button("Predict Parkinson Risk"):
-        # Scale typical voice features
-        fo_scaled = fo / 300
-        fhi_scaled = fhi / 400
-        flo_scaled = flo / 200
-        jitter_scaled = jitter / 0.1
-        shimmer_scaled = shimmer / 0.1
-        hnr_scaled = hnr / 30
-        input_list = [fo_scaled, fhi_scaled, flo_scaled, jitter_scaled, shimmer_scaled, hnr_scaled]
+        input_list = [fo, fhi, flo, jitter, shimmer, hnr]
         input_data = prepare_input(input_list, parkinson_model)
         prob = parkinson_model.predict_proba(input_data)[0][1]
         show_result(prob)
@@ -128,11 +114,7 @@ elif disease == "Thyroid":
     fatigue = st.selectbox("Fatigue (0=No,1=Yes)", [0,1])
 
     if st.button("Predict Thyroid Risk"):
-        age_scaled = age / 100
-        tsh_scaled = tsh / 10
-        t3_scaled = t3 / 5
-        t4_scaled = t4 / 20
-        input_list = [age_scaled, tsh_scaled, t3_scaled, t4_scaled, fatigue]
+        input_list = [age, tsh, t3, t4, fatigue]
         input_data = prepare_input(input_list, thyroid_model)
         prob = thyroid_model.predict_proba(input_data)[0][1]
         show_result(prob)
@@ -147,10 +129,7 @@ elif disease == "Alzheimer":
     confusion = st.selectbox("Confusion (0=No,1=Yes)", [0,1])
 
     if st.button("Predict Alzheimer Risk"):
-        age_scaled = age / 100
-        mmse_scaled = mmse / 30
-        cdr_scaled = cdr / 3
-        input_list = [age_scaled, mmse_scaled, cdr_scaled, memory_loss, confusion]
+        input_list = [age, mmse, cdr, memory_loss, confusion]
         input_data = prepare_input(input_list, alz_model)
         prob = alz_model.predict_proba(input_data)[0][1]
         show_result(prob)
