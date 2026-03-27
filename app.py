@@ -10,24 +10,18 @@ st.write("Enter patient details to predict possible disease risks.")
 # ---------------- Helper Functions ---------------- #
 
 def prepare_input(input_list, model):
-    """
-    Ensure the input has all required features for the model
-    """
+    """Ensure input has all required features for the model"""
     required = model.n_features_in_
     while len(input_list) < required:
         input_list.append(0)
     return np.array([input_list])
 
-def show_result_custom(prob, low_thresh):
-    """
-    Two-category output: 
-    prob < low_thresh → You are OK
-    prob >= low_thresh → Consult a doctor
-    """
-    if prob < low_thresh:
-        st.success(f"🟢 You are OK ({prob*100:.1f}%)")
-    else:
+def show_result(prob, threshold):
+    """Two-category output: prob >= threshold → Consult a doctor"""
+    if prob >= threshold:
         st.error(f"🔴 Consult a doctor ({prob*100:.1f}%)")
+    else:
+        st.success(f"🟢 You are OK ({prob*100:.1f}%)")
 
 # ---------------- Load Models ---------------- #
 diabetes_model = joblib.load("diabetes_model.pkl")
@@ -58,8 +52,7 @@ if disease == "Diabetes":
     if st.button("Predict Diabetes Risk"):
         input_data = np.array([[pregnancies, glucose, bp, skin, insulin, bmi, pedigree, age]])
         prob = diabetes_model.predict_proba(input_data)[0][1]
-        # Disease-specific threshold
-        show_result_custom(prob, low_thresh=0.4)
+        show_result(prob, threshold=0.4)  # Disease-specific threshold
 
 # ---------------- Stroke ---------------- #
 elif disease == "Stroke":
@@ -76,7 +69,7 @@ elif disease == "Stroke":
         input_list = [age, hypertension, heart, glucose, bmi, gender, smoking]
         input_data = prepare_input(input_list, stroke_model)
         prob = stroke_model.predict_proba(input_data)[0][1]
-        show_result_custom(prob, low_thresh=0.3)
+        show_result(prob, threshold=0.3)
 
 # ---------------- Lung Cancer ---------------- #
 elif disease == "Lung Cancer":
@@ -93,7 +86,7 @@ elif disease == "Lung Cancer":
         input_list = [age, smoking, yellow_fingers, anxiety, peer_pressure, alcohol, cough]
         input_data = prepare_input(input_list, lung_model)
         prob = lung_model.predict_proba(input_data)[0][1]
-        show_result_custom(prob, low_thresh=0.35)
+        show_result(prob, threshold=0.35)
 
 # ---------------- Parkinson ---------------- #
 elif disease == "Parkinson":
@@ -109,7 +102,7 @@ elif disease == "Parkinson":
         input_list = [fo, fhi, flo, jitter, shimmer, hnr]
         input_data = prepare_input(input_list, parkinson_model)
         prob = parkinson_model.predict_proba(input_data)[0][1]
-        show_result_custom(prob, low_thresh=0.4)
+        show_result(prob, threshold=0.4)
 
 # ---------------- Thyroid ---------------- #
 elif disease == "Thyroid":
@@ -124,7 +117,7 @@ elif disease == "Thyroid":
         input_list = [age, tsh, t3, t4, fatigue]
         input_data = prepare_input(input_list, thyroid_model)
         prob = thyroid_model.predict_proba(input_data)[0][1]
-        show_result_custom(prob, low_thresh=0.3)
+        show_result(prob, threshold=0.3)
 
 # ---------------- Alzheimer ---------------- #
 elif disease == "Alzheimer":
@@ -139,4 +132,4 @@ elif disease == "Alzheimer":
         input_list = [age, mmse, cdr, memory_loss, confusion]
         input_data = prepare_input(input_list, alz_model)
         prob = alz_model.predict_proba(input_data)[0][1]
-        show_result_custom(prob, low_thresh=0.4)
+        show_result(prob, threshold=0.4)
