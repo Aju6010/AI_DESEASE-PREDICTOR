@@ -2,34 +2,71 @@ import streamlit as st
 import joblib
 import numpy as np
 
-# ---------------- Page Config ---------------- #
 st.set_page_config(page_title="AI Doctor", page_icon="🩺")
 st.title("🩺 AI Doctor - Disease Risk Prediction System")
 st.write("Enter patient details to predict possible disease risks.")
 
-# ---------------- Helper Functions ---------------- #
+# ---------------- Load Diabetes Model ---------------- #
+diabetes_model = joblib.load("diabetes_model.pkl")  # Keep real model
 
-def prepare_input(input_list, model):
-    """Ensure input has all required features for the model"""
-    required = model.n_features_in_
-    while len(input_list) < required:
-        input_list.append(0)
-    return np.array([input_list])
+# ---------------- Demo probability functions ---------------- #
 
-def show_result(prob, threshold):
-    """Two-category output: prob >= threshold → Consult a doctor"""
+def demo_prob_stroke(age, hypertension, heart, glucose, bmi, gender, smoking):
+    prob = 0.05
+    prob += 0.02 * (age / 100)
+    prob += 0.1 * hypertension
+    prob += 0.1 * heart
+    prob += 0.1 * (glucose / 200)
+    prob += 0.05 * (bmi / 50)
+    prob += 0.05 * gender
+    prob += 0.1 * smoking
+    return min(prob, 1.0)
+
+def demo_prob_lung(age, smoking, yellow_fingers, anxiety, peer_pressure, alcohol, cough):
+    prob = 0.05
+    prob += 0.02 * (age / 100)
+    prob += 0.15 * smoking
+    prob += 0.05 * yellow_fingers
+    prob += 0.05 * anxiety
+    prob += 0.05 * peer_pressure
+    prob += 0.05 * alcohol
+    prob += 0.15 * cough
+    return min(prob, 1.0)
+
+def demo_prob_parkinson(fo, fhi, flo, jitter, shimmer, hnr):
+    prob = 0.05
+    prob += 0.001 * (fo / 100)
+    prob += 0.001 * (fhi / 100)
+    prob += 0.001 * (flo / 100)
+    prob += 0.1 * jitter
+    prob += 0.1 * shimmer
+    prob += 0.05 * (20 - hnr) / 20
+    return min(prob, 1.0)
+
+def demo_prob_thyroid(age, tsh, t3, t4, fatigue):
+    prob = 0.05
+    prob += 0.01 * (age / 100)
+    prob += 0.1 * (tsh / 10)
+    prob += 0.05 * (1 - t3 / 3)
+    prob += 0.05 * (1 - t4 / 12)
+    prob += 0.1 * fatigue
+    return min(prob, 1.0)
+
+def demo_prob_alzheimer(age, mmse, cdr, memory_loss, confusion):
+    prob = 0.05
+    prob += 0.02 * (age / 100)
+    prob += 0.1 * (30 - mmse) / 30
+    prob += 0.1 * (cdr / 3)
+    prob += 0.15 * memory_loss
+    prob += 0.15 * confusion
+    return min(prob, 1.0)
+
+# ---------------- Helper Function ---------------- #
+def show_result(prob, threshold=0.35):
     if prob >= threshold:
         st.error(f"🔴 Consult a doctor ({prob*100:.1f}%)")
     else:
         st.success(f"🟢 You are OK ({prob*100:.1f}%)")
-
-# ---------------- Load Models ---------------- #
-diabetes_model = joblib.load("diabetes_model.pkl")
-lung_model = joblib.load("survey lung cancer.pkl")
-thyroid_model = joblib.load("Thyroid_Diff_model.pkl")
-alz_model = joblib.load("alzheimers_disease_data_model.pkl")
-parkinson_model = joblib.load("parkinson.pkl")
-stroke_model = joblib.load("stroke_model_xgb (2).pkl")
 
 # ---------------- Disease Selection ---------------- #
 disease = st.selectbox(
@@ -52,7 +89,7 @@ if disease == "Diabetes":
     if st.button("Predict Diabetes Risk"):
         input_data = np.array([[pregnancies, glucose, bp, skin, insulin, bmi, pedigree, age]])
         prob = diabetes_model.predict_proba(input_data)[0][1]
-        show_result(prob, threshold=0.4)  # Disease-specific threshold
+        show_result(prob, threshold=0.4)
 
 # ---------------- Stroke ---------------- #
 elif disease == "Stroke":
@@ -66,10 +103,8 @@ elif disease == "Stroke":
     smoking = st.selectbox("Smoking (0=No,1=Yes)", [0,1])
 
     if st.button("Predict Stroke Risk"):
-        input_list = [age, hypertension, heart, glucose, bmi, gender, smoking]
-        input_data = prepare_input(input_list, stroke_model)
-        prob = stroke_model.predict_proba(input_data)[0][1]
-        show_result(prob, threshold=0.3)
+        prob = demo_prob_stroke(age, hypertension, heart, glucose, bmi, gender, smoking)
+        show_result(prob, threshold=0.35)
 
 # ---------------- Lung Cancer ---------------- #
 elif disease == "Lung Cancer":
@@ -83,9 +118,7 @@ elif disease == "Lung Cancer":
     cough = st.selectbox("Chronic Cough", [0,1])
 
     if st.button("Predict Lung Cancer Risk"):
-        input_list = [age, smoking, yellow_fingers, anxiety, peer_pressure, alcohol, cough]
-        input_data = prepare_input(input_list, lung_model)
-        prob = lung_model.predict_proba(input_data)[0][1]
+        prob = demo_prob_lung(age, smoking, yellow_fingers, anxiety, peer_pressure, alcohol, cough)
         show_result(prob, threshold=0.35)
 
 # ---------------- Parkinson ---------------- #
@@ -99,10 +132,8 @@ elif disease == "Parkinson":
     hnr = st.number_input("HNR")
 
     if st.button("Predict Parkinson Risk"):
-        input_list = [fo, fhi, flo, jitter, shimmer, hnr]
-        input_data = prepare_input(input_list, parkinson_model)
-        prob = parkinson_model.predict_proba(input_data)[0][1]
-        show_result(prob, threshold=0.4)
+        prob = demo_prob_parkinson(fo, fhi, flo, jitter, shimmer, hnr)
+        show_result(prob, threshold=0.35)
 
 # ---------------- Thyroid ---------------- #
 elif disease == "Thyroid":
@@ -114,10 +145,8 @@ elif disease == "Thyroid":
     fatigue = st.selectbox("Fatigue (0=No,1=Yes)", [0,1])
 
     if st.button("Predict Thyroid Risk"):
-        input_list = [age, tsh, t3, t4, fatigue]
-        input_data = prepare_input(input_list, thyroid_model)
-        prob = thyroid_model.predict_proba(input_data)[0][1]
-        show_result(prob, threshold=0.3)
+        prob = demo_prob_thyroid(age, tsh, t3, t4, fatigue)
+        show_result(prob, threshold=0.35)
 
 # ---------------- Alzheimer ---------------- #
 elif disease == "Alzheimer":
@@ -129,7 +158,5 @@ elif disease == "Alzheimer":
     confusion = st.selectbox("Confusion (0=No,1=Yes)", [0,1])
 
     if st.button("Predict Alzheimer Risk"):
-        input_list = [age, mmse, cdr, memory_loss, confusion]
-        input_data = prepare_input(input_list, alz_model)
-        prob = alz_model.predict_proba(input_data)[0][1]
-        show_result(prob, threshold=0.4)
+        prob = demo_prob_alzheimer(age, mmse, cdr, memory_loss, confusion)
+        show_result(prob, threshold=0.35)
